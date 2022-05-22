@@ -22,6 +22,12 @@ def subscribe(id):
     mycol.update_one({'id': id},{ "$set":  {'end_date': time2}})
     return(mycol.find_one({'id': id})["end_date"])
 
+def checkUser(id):
+    user = mycol.find_one({"id": id})
+    userModel = [user["name"], user["id"], user["token"], user["price"], user["start_date"], user["end_date"], user["retry"]]
+    return userModel
+
+
 def checkSub():
     kick_members = []
     for member in mycol.find(): 

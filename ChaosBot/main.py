@@ -4,7 +4,7 @@ import datetime
 import json
 import asyncio
 from config import BOT_TOKEN, PRICE, MEMBER_ROLE, TRAIL_MEMBER_ROLE, PUBLIC_MEMBER_ROLE
-from mongo import createUser, checkSub, takeName,subscribe
+from mongo import createUser, checkSub, takeName, subscribe, checkUser
 from discord.ext import commands
 from discord.ext.commands import Bot
 from get_price import price_list
@@ -46,7 +46,7 @@ async def on_member_join(member:discord.Member = None):
 
 
 @bot.command()
-async def info(ctx,member:discord.Member = None, guild: discord.Guild = None):
+async def addDB(ctx,member:discord.Member = None, guild: discord.Guild = None):
     await ctx.message.delete()
     name = member.display_name
     id = member.id
@@ -56,6 +56,21 @@ async def info(ctx,member:discord.Member = None, guild: discord.Guild = None):
     end_date = start_date + delta
     model = {"name": name, "id": id, "token": token, "price": PRICE, "start_date": start_date, "end_date": end_date, "retry": 0}
     createUser(model)
+
+@bot.command()
+async def check(ctx, *, message):
+    await ctx.message.delete()
+    model = checkUser(int(message))
+    emb = discord.Embed(title="Информация о пользователе.", color=ctx.message.author.color)
+    emb.add_field(name="Никнейм", value=model[0], inline=False)
+    emb.add_field(name="ID", value=model[1], inline=False)
+    emb.add_field(name="Token", value=model[2], inline=False)
+    emb.add_field(name="Цена подписки", value=model[3], inline=False)
+    emb.add_field(name="Дата начала", value=model[4], inline=False)
+    emb.add_field(name="Дата конца", value=model[5], inline=False)
+    emb.add_field(name="Попытки", value=model[6], inline=False)
+
+    await ctx.send(embed = emb)
 
 @bot.command()
 async def subCheck(ctx):
@@ -76,116 +91,14 @@ async def subCheck(ctx):
 
 @bot.command()
 async def sub(ctx, member: discord.Member):
+    await ctx.message.delete()
     subscribe(member.id)
     role = member.guild.get_role(role_id=PUBLIC_MEMBER_ROLE)
     await member.remove_roles(role)
     role = member.guild.get_role(role_id=MEMBER_ROLE)
     await member.add_roles(role)
+    emb = discord.Embed(description=f"Вы одобрили членство **{member.display_name}**", color=ctx.message.author.color)
+    await ctx.send(embed = emb)
 
-
-#выдача роли
-@bot.command(name="selfrole")
-async def self_role(ctx):
-    await ctx.send("Answer These Question In Next 2Min!")
-
-    questions = ["Enter Message: ", "Enter Emojis: ", "Enter Roles: ", "Enter Channel: "]
-    answers = []
-
-    def check(user):
-        return user.author == ctx.author and user.channel == ctx.channel
-    
-    for question in questions:
-        await ctx.send(question)
-
-        try:
-            msg = await bot.wait_for('message', timeout=120.0, check=check)
-        except asyncio.TimeoutError:
-            await ctx.send("Type Faster Next Time!")
-            return
-        else:
-            answers.append(msg.content)
-
-    emojis = answers[1].split(" ")
-    roles = answers[2].split(" ")
-    c_id = int(answers[3][2:-1])
-    channel = bot.get_channel(c_id)
-
-    bot_msg = await channel.send(answers[0])
-
-    with open("selfrole.json", "r") as f:
-        self_roles = json.load(f)
-
-    self_roles[str(bot_msg.id)] = {}
-    self_roles[str(bot_msg.id)]["emojis"] = emojis
-    self_roles[str(bot_msg.id)]["roles"] = roles
-
-    with open("selfrole.json", "w") as f:
-        json.dump(self_roles, f)
-
-    for emoji in emojis:
-        await bot_msg.add_reaction(emoji)
-
-@bot.event
-async def on_raw_reaction_add(payload):
-    msg_id = payload.message_id
-
-    with open("selfrole.json", "r") as f:
-        self_roles = json.load(f)
-
-    if payload.member.bot:
-        return
-    
-    if str(msg_id) in self_roles:
-        emojis = []
-        roles = []
-
-        for emoji in self_roles[str(msg_id)]['emojis']:
-            emojis.append(emoji)
-
-        for role in self_roles[str(msg_id)]['roles']:
-            roles.append(role)
-        
-        guild = bot.get_guild(payload.guild_id)
-
-        for i in range(len(emojis)):
-            choosed_emoji = str(payload.emoji)
-            if choosed_emoji == emojis[i]:
-                selected_role = roles[i]
-
-                role = discord.utils.get(guild.roles, name=selected_role)
-
-                await payload.member.add_roles(role)
-                await payload.member.send(f"You Got {selected_role} Role!")
-
-@bot.event
-async def on_raw_reaction_remove(payload):
-    msg_id = payload.message_id
-
-    with open("selfrole.json", "r") as f:
-        self_roles = json.load(f)
-    
-    if str(msg_id) in self_roles:
-        emojis = []
-        roles = []
-
-        for emoji in self_roles[str(msg_id)]['emojis']:
-            emojis.append(
-                emoji)
-
-        for role in self_roles[str(msg_id)]['roles']:
-            roles.append(role)
-        
-        guild = bot.get_guild(payload.guild_id)
-
-        for i in range(len(emojis)):
-            choosed_emoji = str(payload.emoji)
-            if choosed_emoji == emojis[i]:
-                selected_role = roles[i]
-
-                role = discord.utils.get(guild.roles, name=selected_role)
-
-                member = await(guild.fetch_member(payload.user_id))
-                if member is not None:
-                    await member.remove_roles(role)
 
 bot.run(BOT_TOKEN)
