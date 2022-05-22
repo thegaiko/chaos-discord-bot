@@ -77,7 +77,7 @@ async def subCheck(ctx):
 @bot.command()
 async def sub(ctx, member: discord.Member):
     subscribe(member.id)
-    role = member.guild.get_role(role_id=TRAIL_MEMBER_ROLE)
+    role = member.guild.get_role(role_id=PUBLIC_MEMBER_ROLE)
     await member.remove_roles(role)
     role = member.guild.get_role(role_id=MEMBER_ROLE)
     await member.add_roles(role)

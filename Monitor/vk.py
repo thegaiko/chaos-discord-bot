@@ -43,7 +43,7 @@ def post_check(name, offset, count):
                     'response']['items'][0]['attachments'][0]['photo']['sizes'][0]['url']
             except KeyError:
                 embed = DiscordEmbed(
-                    title=name, description=text, url=f'https://vk.com/{name}', color=0x3000ff)
+                    title=name, description=text, url=f'https://vk.com/{name}', color='5a359c')
                 embed.set_footer(
                     text='VK', icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/VK.com-logo.svg/2048px-VK.com-logo.svg.png')
                 webhook.add_embed(embed)
@@ -55,7 +55,7 @@ def post_check(name, offset, count):
                     'response']['items'][0]['attachments'][0]['photo']['sizes'][len(response.json()[
                         'response']['items'][0]['attachments'][0]['photo']['sizes'])-1]['url']
                 embed = DiscordEmbed(title=name, url=f'https://vk.com/{name}', image={
-                    "url": photo}, description=text, color=0x3000ff)
+                    "url": photo}, description=text, color='5a359c')
                 embed.set_footer(
                     text='VK', icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/VK.com-logo.svg/2048px-VK.com-logo.svg.png')
                 webhook.add_embed(embed)
