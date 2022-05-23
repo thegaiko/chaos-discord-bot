@@ -14,7 +14,7 @@ webhook = DiscordWebhook(
 
 
 def post_check(name, offset, count):
-    payload = f'domain={name}&offset={offset}&count={count}&extended=false&access_token=0b97751f0b97751f0b97751f920bec1a5500b970b97751f698deca772c621f6c27724c3&v=5.131'
+    payload = f'domain={name}&offset={offset}&count={count}&extended=false&access_token=efc31359efc31359efc3135901efbfa9c4eefc3efc313598d48465ad25a585974cbdc96&v=5.131'
     headers = {
         'authority': 'api.vk.com',
         'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Google Chrome";v="98"',
@@ -72,3 +72,5 @@ for i in range(len(names)):
     t.append(Thread(target=post_check, args=(
         names[i], offsets[i], counts[i],)))
     t[i].start()
+
+    
