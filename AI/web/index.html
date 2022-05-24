@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="eel.js"></script>
+</head>
+
+<body>
+
+    <div class="box">
+        <form action="#">
+            <input type="text" id="access_token" placeholder="access_token">
+            <input type="text" id="ds_token" placeholder="ds_token">
+            <input type="text" id="channel" placeholder="channel">
+            <input type="text" id="delay" placeholder="delay">
+            <input type="submit" id="btn" value="Start">
+        </form>
+    </div>
+
+    <script>
+        let btn = document.querySelector("#btn");
+        btn.addEventListener("click", sendData);
+
+        async function sendData() {
+            let access_token = document.querySelector("#access_token").value;
+            let ds_token = document.querySelector("#ds_token").value;
+            let channel = document.querySelector("#channel").value;
+            let delay = document.querySelector("#delay").value;
+
+            await eel.recv_data(access_token, ds_token, channel, delay);
+        }
+    </script>
+
+</body>
+
+</html>
