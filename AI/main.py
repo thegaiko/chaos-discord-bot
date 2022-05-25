@@ -1,16 +1,27 @@
-import eel
+from curses.ascii import DEL, US
+from flask import Flask, request, jsonify
 from mongo import checkTOKEN
 from inter import main
+import json
+app = Flask(__name__)
 
-eel.init("/Users/gev.sb/Chaos/AI/web")
-
-@eel.expose
-def recv_data(access_token, ds_token, channel, delay):
-    if checkTOKEN(access_token)==True:
-        main(ds_token, channel, delay)
+@app.route('/ai', methods=['POST'])
+def process_json():
+    content_type = request.headers.get('Content-Type')
+    if (content_type == 'application/json'):
+        json = request.json
+        AUTH_TOKEN = json["AUTH_TOKEN"]
+        DS_TOKEN = json["DS_TOKEN"]
+        CHANNEL = json["CHANNEL"]
+        USER = json["USER"]
+        DELAY = json["DELAY"]
+        if checkTOKEN(AUTH_TOKEN)==True:
+            main(DS_TOKEN, CHANNEL, USER, DELAY)
+            return 'Process started'
+        else:
+            return 'auth failed'
     else:
-        print("error")
-        exit()
+        return 'Content-Type not supported!'
 
-
-eel.start("index.html", size=(700, 700))
+if __name__ == "__main__":
+    app.run(debug=True)

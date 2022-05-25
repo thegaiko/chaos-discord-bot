@@ -1,18 +1,17 @@
 from ast import arg
 from curses.ascii import DEL
 import discum
-import requests
-import json
+import os
 from base import message_base
 from req import aio
 from mongo import checkTOKEN
 import random
 import time
 from threading import Thread
-from pprint import pprint 
 from datetime import datetime
 
-def main(TOKEN, CHANNEL_ID, DELAY):
+
+def main(TOKEN, CHANNEL_ID, USER, DELAY):
     bot = discum.Client(token = TOKEN, log=False)
 
     last_mention = [datetime.now()]
@@ -28,9 +27,12 @@ def main(TOKEN, CHANNEL_ID, DELAY):
                 channelID = m['channel_id']
                 username = m['author']['username']
                 content = m['content']
-                if channelID == CHANNEL_ID and username != 'gaiko':
+                if username == USER and content == 'bye': 
+                    print("EXIT")
+                    os._exit(0)
+                if channelID == CHANNEL_ID and username != USER:
                     if m['type'] == 'reply':
-                        if m["referenced_message"]["author"]["username"] == 'gaiko':
+                        if m["referenced_message"]["author"]["username"] == USER:
                             last_mention.append(datetime.now())
                             bot.sendMessage(CHANNEL_ID, aio(content))
 
@@ -43,7 +45,6 @@ def main(TOKEN, CHANNEL_ID, DELAY):
             now = datetime.now()
             now = time.mktime(now.timetuple())
             moment = now - last
-            print(moment)
             if moment > int(DELAY):
                 i = random.randint(0, (len(message_base) - 1))
                 bot.sendMessage(CHANNEL_ID, message_base[i])
