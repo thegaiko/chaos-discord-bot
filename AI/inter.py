@@ -1,5 +1,3 @@
-from ast import arg
-from curses.ascii import DEL
 import discum
 import os
 from base import message_base
@@ -13,11 +11,12 @@ from datetime import datetime
 
 def main(TOKEN, CHANNEL_ID, USER, DELAY):
     bot = discum.Client(token = TOKEN, log=False)
-
+    
     last_mention = [datetime.now()]
 
     @bot.gateway.command
     def helloworld(resp):
+
         if resp.event.ready_supplemental: #ready_supplemental is sent after ready
             user = bot.gateway.session.user
             print("Logged in as {}#{}".format(user['username'], user['discriminator']))
@@ -29,7 +28,7 @@ def main(TOKEN, CHANNEL_ID, USER, DELAY):
                 content = m['content']
                 if username == USER and content == 'bye': 
                     print("EXIT")
-                    os._exit(0)
+                    return ("End")
                 if channelID == CHANNEL_ID and username != USER:
                     if m['type'] == 'reply':
                         if m["referenced_message"]["author"]["username"] == USER:

@@ -1,27 +1,42 @@
-from curses.ascii import DEL, US
-from flask import Flask, request, jsonify
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from fastapi.middleware.cors import CORSMiddleware
+
 from mongo import checkTOKEN
 from inter import main
-import json
-app = Flask(__name__)
 
-@app.route('/ai', methods=['POST'])
-def process_json():
-    content_type = request.headers.get('Content-Type')
-    if (content_type == 'application/json'):
-        json = request.json
-        AUTH_TOKEN = json["AUTH_TOKEN"]
-        DS_TOKEN = json["DS_TOKEN"]
-        CHANNEL = json["CHANNEL"]
-        USER = json["USER"]
-        DELAY = json["DELAY"]
-        if checkTOKEN(AUTH_TOKEN)==True:
-            main(DS_TOKEN, CHANNEL, USER, DELAY)
-            return 'Process started'
-        else:
-            return 'auth failed'
+import uvicorn
+
+origins = ["*"]
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class AI(BaseModel):
+    AUTH_TOKEN: str
+    DS_TOKEN: str
+    CHANNEL: str
+    USER: str
+    DELAY: int
+
+
+
+@app.post("/ai/")
+async def create_item(model: AI):
+    if checkTOKEN(model.AUTH_TOKEN)==True:
+            main(model.DS_TOKEN, model.CHANNEL, model.USER, model.DELAY)
+            return True
     else:
-        return 'Content-Type not supported!'
+        return False
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, log_level="info")
