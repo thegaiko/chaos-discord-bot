@@ -1,3 +1,4 @@
+from os import access
 import discord
 import secrets
 import datetime
@@ -12,7 +13,7 @@ from asyncio import sleep
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
-
+acceses = []
 @bot.event
 async def on_ready():
     while True:
@@ -57,20 +58,36 @@ async def addDB(ctx,member:discord.Member = None, guild: discord.Guild = None):
     model = {"name": name, "id": id, "token": token, "price": PRICE, "start_date": start_date, "end_date": end_date, "retry": 0}
     createUser(model)
 
+
+
+@bot.command()
+async def getToken(ctx):
+    await ctx.message.delete()
+    model = checkUser(int(ctx.author.id))
+    emb = discord.Embed(title=f"Персональный токен для пользователя {model[0]}", color=ctx.message.author.color)
+    emb.add_field(name="TOKEN", value=f"```{model[2]}```", inline=False)
+    emb.add_field(name="Дата окончания подписки", value=model[5], inline=False)
+    await ctx.author.send(embed = emb)
+
+
 @bot.command()
 async def check(ctx, *, message):
-    await ctx.message.delete()
-    model = checkUser(int(message))
-    emb = discord.Embed(title="Информация о пользователе.", color=ctx.message.author.color)
-    emb.add_field(name="Никнейм", value=model[0], inline=False)
-    emb.add_field(name="ID", value=model[1], inline=False)
-    emb.add_field(name="Token", value=model[2], inline=False)
-    emb.add_field(name="Цена подписки", value=model[3], inline=False)
-    emb.add_field(name="Дата начала", value=model[4], inline=False)
-    emb.add_field(name="Дата конца", value=model[5], inline=False)
-    emb.add_field(name="Попытки", value=model[6], inline=False)
-
-    await ctx.send(embed = emb)
+    if ctx.author.id in acceses:
+        await ctx.message.delete()
+        model = checkUser(int(message))
+        emb = discord.Embed(title="Информация о пользователе.", color=ctx.message.author.color)
+        emb.add_field(name="Никнейм", value=model[0], inline=False)
+        emb.add_field(name="ID", value=model[1], inline=False)
+        emb.add_field(name="Token", value=model[2], inline=False)
+        emb.add_field(name="Цена подписки", value=model[3], inline=False)
+        emb.add_field(name="Дата начала", value=model[4], inline=False)
+        emb.add_field(name="Дата конца", value=model[5], inline=False)
+        emb.add_field(name="Попытки", value=model[6], inline=False)
+        await ctx.send(embed = emb)
+    else: 
+        embed1 = discord.Embed(
+            description=f'Извините, у вас нет доступа.', color=0x08b00ff)
+        await ctx.send(embed=embed1)
 
 @bot.command()
 async def subCheck(ctx):
