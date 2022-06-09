@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from email import message
 from pymongo import MongoClient
 import datetime
 
@@ -45,3 +46,16 @@ def checkSub():
         else:
             pass
     return kick_members
+
+
+def getMessagesDB():
+    mycol = mydb["passive_messages_eng"]
+    res = []
+    for x in mycol.find({}, {"_id":0}): 
+            res.append(x['message'])
+    return res
+
+def delMessages(res):
+    mycol = mydb["passive_messages_eng"]
+    myquery = { "message": res}
+    mycol.delete_one(myquery)

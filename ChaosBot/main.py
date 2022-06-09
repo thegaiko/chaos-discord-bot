@@ -5,7 +5,7 @@ import datetime
 import json
 import asyncio
 from config import BOT_TOKEN, PRICE, MEMBER_ROLE, TRAIL_MEMBER_ROLE, PUBLIC_MEMBER_ROLE
-from mongo import createUser, checkSub, takeName, subscribe, checkUser
+from mongo import createUser, checkSub, takeName, subscribe, checkUser, getMessagesDB, delMessages
 from discord.ext import commands
 from discord.ext.commands import Bot
 from get_price import price_list
@@ -25,6 +25,29 @@ async def on_ready():
                 await bot.change_presence(status=discord.Status.online, activity=discord.Game(text))
                 await sleep(3)
             time += 1
+
+@bot.command()
+async def moderate(ctx):
+    messages = getMessagesDB()
+    emb = discord.Embed(title="Модерация сообщений бота.", color=ctx.message.author.color)
+    for i in range(len(messages)):
+        emb.add_field(name=i, value=messages[i], inline=False)
+    await ctx.send(embed = emb)
+
+@bot.command()
+async def deleteMessage(ctx, *arg):
+    messages = getMessagesDB()
+    numbers = arg
+    for number in numbers:
+        number = int(number)
+        delMessages(messages[number])
+    messages = getMessagesDB()
+    emb = discord.Embed(title="Модерация сообщений бота.", color=ctx.message.author.color)
+    for i in range(len(messages)):
+        emb.add_field(name=i, value=messages[i], inline=False)
+    await ctx.send(embed = emb)
+
+
 
 @bot.command()
 async def clear(message):
