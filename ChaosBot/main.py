@@ -61,7 +61,8 @@ async def verify(ctx, token):
     start_date = datetime.datetime.now()
     delta = datetime.timedelta(days=int(7))
     end_date = start_date + delta
-    verifyDb(name, id, start_date, delta, end_date, token)
+    avatar = member.avatar_url
+    verifyDb(name, id, start_date, end_date, str(avatar), token)
     role = member.guild.get_role(role_id=MEMBER_ROLE)
     await member.add_roles(role)
     emb = discord.Embed(title=f"Добро пожаловать {name}!", color=ctx.message.author.color)

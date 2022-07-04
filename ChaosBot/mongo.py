@@ -28,9 +28,9 @@ def delReq(id):
     myquery = { "id": id}
     mycol.delete_one(myquery)
 
-def verifyDb(name, id, start_date, delta, end_date, token):
+def verifyDb(name, id, start_date, end_date, avatar, token):
     mycol = mydb["chaos_members"]
-    mycol.update_one({'token': token},{ "$set":  {'name': name, 'id': id, 'start_date': start_date, 'end_date': end_date}})
+    mycol.update_one({'token': token},{ "$set":  {'name': name, 'id': id, 'avatar': avatar, 'start_date': start_date, 'end_date': end_date}})
     
 
 def takeName(id):
