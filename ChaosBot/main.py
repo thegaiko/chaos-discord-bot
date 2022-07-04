@@ -68,7 +68,7 @@ async def verify(ctx, token):
     await ctx.author.send(embed = emb)
 
 @bot.command()
-async def generateToken(ctx, token):
+async def generateToken(ctx):
     await ctx.message.delete()
     token = secrets.token_hex(16)
     model = {"name": "-", "id": '-', "token": token, "avatar": "-", "price": "-", "start_date": "-", "end_date": "-", "retry": "-"}
