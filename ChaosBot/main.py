@@ -1,11 +1,13 @@
+from email import message
 from os import access
+from tracemalloc import start
 import discord
 import secrets
 import datetime
 import json
 import asyncio
 from config import BOT_TOKEN, PRICE, MEMBER_ROLE, TRAIL_MEMBER_ROLE, PUBLIC_MEMBER_ROLE
-from mongo import createUser, checkSub, takeName, subscribe, checkUser, getMessagesDB, delMessages
+from mongo import createUser, checkSub, takeName, subscribe, checkUser, getRequestsList, delReq, verifyDb
 from discord.ext import commands
 from discord.ext.commands import Bot
 from get_price import price_list
@@ -27,34 +29,61 @@ async def on_ready():
             time += 1
 
 @bot.command()
-async def moderate(ctx):
-    messages = getMessagesDB()
-    emb = discord.Embed(title="Модерация сообщений бота.", color=ctx.message.author.color)
-    for i in range(len(messages)):
-        emb.add_field(name=i, value=messages[i], inline=False)
-    await ctx.send(embed = emb)
+async def requestsList(ctx):
+    requests = getRequestsList()
+    for request in requests:
+        emb = discord.Embed(title=f"Модерация заявок", color=ctx.message.author.color)
+        emb.add_field(name="ID", value=request['id'], inline=False)
+        emb.add_field(name="Имя", value=request['name'], inline=False)
+        emb.add_field(name="Discord", value=request['discord'], inline=False)
+        emb.add_field(name="Email", value=request['email'], inline=False)
+        emb.add_field(name="О себе", value=request['about'], inline=False)
+        await ctx.send(embed = emb)
+
 
 @bot.command()
-async def deleteMessage(ctx, *arg):
-    messages = getMessagesDB()
-    numbers = arg
-    for number in numbers:
-        number = int(number)
-        delMessages(messages[number])
-    messages = getMessagesDB()
-    emb = discord.Embed(title="Модерация сообщений бота.", color=ctx.message.author.color)
-    for i in range(len(messages)):
-        emb.add_field(name=i, value=messages[i], inline=False)
+async def acceptRequest(ctx, id):
+    delReq(id)
+    token = secrets.token_hex(16)
+    model = {"name": "-", "id": '-', "token": token, "avatar": "-", "price": "-", "start_date": "-", "end_date": "-", "retry": "-"}
+    createUser(model)
+    emb = discord.Embed(title=f"Токен", color=ctx.message.author.color)
+    emb.add_field(name="Новый токен для пользователья.", value=f"```{token}```", inline=False)
     await ctx.send(embed = emb)
 
 
+@bot.command()
+async def verify(ctx, token):
+    await ctx.message.delete()
+    member = ctx.message.author
+    name = member.display_name
+    id = member.id
+    start_date = datetime.datetime.now()
+    delta = datetime.timedelta(days=int(7))
+    end_date = start_date + delta
+    verifyDb(name, id, start_date, delta, end_date, token)
+    role = member.guild.get_role(role_id=MEMBER_ROLE)
+    await member.add_roles(role)
+    emb = discord.Embed(title=f"Добро пожаловать {name}!", color=ctx.message.author.color)
+    await ctx.author.send(embed = emb)
+
+@bot.command()
+async def generateToken(ctx, token):
+    await ctx.message.delete()
+    token = secrets.token_hex(16)
+    model = {"name": "-", "id": '-', "token": token, "avatar": "-", "price": "-", "start_date": "-", "end_date": "-", "retry": "-"}
+    createUser(model)
+    emb = discord.Embed(title=f"Токен", color=ctx.message.author.color)
+    emb.add_field(name="Новый токен для пользователья.", value=f"```{token}```", inline=False)
+    await ctx.send(embed = emb)
+    
 
 @bot.command()
 async def clear(message):
     async for msg in message.channel.history():
         await msg.delete()
 
-@bot.event
+#@bot.event
 async def on_member_join(member:discord.Member = None):
     role = member.guild.get_role(role_id=PUBLIC_MEMBER_ROLE)
     await member.add_roles(role)
@@ -63,9 +92,10 @@ async def on_member_join(member:discord.Member = None):
     id = member.id
     token = secrets.token_hex(16)
     start_date = datetime.datetime.now()
+    avatar = member.avatar_url
     delta = datetime.timedelta(days=int(7))
     end_date = start_date + delta
-    model = {"name": name, "id": id, "token": token, "price": PRICE, "start_date": start_date, "end_date": end_date, "retry": 0}
+    model = {"name": name, "id": id, "token": token, "avatar": avatar, "price": PRICE, "start_date": start_date, "end_date": end_date, "retry": 0}
     createUser(model)
 
 

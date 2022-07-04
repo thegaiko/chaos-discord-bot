@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from email import message
+from unittest import result
 from pymongo import MongoClient
 import datetime
 
@@ -9,8 +10,28 @@ client = MongoClient(
 mydb = client["chaos"]
 mycol = mydb["chaos_members"]
 
+def getUser():
+    result = []
+    for x in mycol.find({}, {"_id":0}): 
+        result.append(x['id'])
+    return(result)
+
+def addAva(user):
+    mycol.update_one({'id': user['id']},{ "$set":  {'avatar': user['avatar']}})
+    return True
+
 def createUser(model):
     mycol.insert_one(model)
+
+def delReq(id):
+    mycol = mydb["requests"]
+    myquery = { "id": id}
+    mycol.delete_one(myquery)
+
+def verifyDb(name, id, start_date, delta, end_date, token):
+    mycol = mydb["chaos_members"]
+    mycol.update_one({'token': token},{ "$set":  {'name': name, 'id': id, 'start_date': start_date, 'end_date': end_date}})
+    
 
 def takeName(id):
     name = mycol.find_one({"id": id})["name"]
@@ -48,11 +69,11 @@ def checkSub():
     return kick_members
 
 
-def getMessagesDB():
-    mycol = mydb["passive_messages_eng"]
+def getRequestsList():
+    mycol = mydb["requests"]
     res = []
     for x in mycol.find({}, {"_id":0}): 
-            res.append(x['message'])
+            res.append({"id": x['id'], "name": x['name'], "discord": x['discord'], "email": x['email'], "about": x['about']})
     return res
 
 def delMessages(res):
