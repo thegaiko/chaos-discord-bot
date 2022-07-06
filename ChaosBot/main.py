@@ -7,7 +7,7 @@ import datetime
 import json
 import asyncio
 from config import BOT_TOKEN, PRICE, MEMBER_ROLE, TRAIL_MEMBER_ROLE, PUBLIC_MEMBER_ROLE
-from mongo import createUser, checkSub, takeName, subscribe, checkUser, getRequestsList, delReq, verifyDb
+from mongo import createUser, checkSub, takeName, subscribe, checkUser, getRequestsList, delReq, verifyDb, addAvatar
 from discord.ext import commands
 from discord.ext.commands import Bot
 from get_price import price_list
@@ -51,6 +51,17 @@ async def acceptRequest(ctx, id):
     emb.add_field(name="Новый токен для пользователья.", value=f"```{token}```", inline=False)
     await ctx.send(embed = emb)
 
+@bot.command()
+async def addAva(ctx, *, member: discord.Member = None):
+    if not member:
+        member = ctx.message.author
+    avatar = member.avatar_url
+    name = member.display_name
+    id = member.id
+    start_date = datetime.datetime.now()
+    delta = datetime.timedelta(days=int(7))
+    end_date = start_date + delta
+    addAvatar(name, id, start_date, end_date, str(avatar))
 
 @bot.command()
 async def verify(ctx, token):
@@ -84,20 +95,20 @@ async def clear(message):
     async for msg in message.channel.history():
         await msg.delete()
 
-#@bot.event
+@bot.event
 async def on_member_join(member:discord.Member = None):
     role = member.guild.get_role(role_id=PUBLIC_MEMBER_ROLE)
     await member.add_roles(role)
     #создание ячейки в бд
-    name = member.display_name
-    id = member.id
-    token = secrets.token_hex(16)
-    start_date = datetime.datetime.now()
-    avatar = member.avatar_url
-    delta = datetime.timedelta(days=int(7))
-    end_date = start_date + delta
-    model = {"name": name, "id": id, "token": token, "avatar": avatar, "price": PRICE, "start_date": start_date, "end_date": end_date, "retry": 0}
-    createUser(model)
+    #name = member.display_name
+    #id = member.id
+    #token = secrets.token_hex(16)
+    #start_date = datetime.datetime.now()
+    #avatar = member.avatar_url
+    #delta = datetime.timedelta(days=int(7))
+    #end_date = start_date + delta
+    #model = {"name": name, "id": id, "token": token, "avatar": avatar, "price": PRICE, "start_date": start_date, "end_date": end_date, "retry": 0}
+    #createUser(model)
 
 
 @bot.command()

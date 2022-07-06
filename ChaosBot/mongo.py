@@ -31,7 +31,10 @@ def delReq(id):
 def verifyDb(name, id, start_date, end_date, avatar, token):
     mycol = mydb["chaos_members"]
     mycol.update_one({'token': token},{ "$set":  {'name': name, 'id': id, 'avatar': avatar, 'start_date': start_date, 'end_date': end_date}})
-    
+
+def addAvatar(name, id, start_date, end_date, avatar):
+    mycol = mydb["chaos_members"]
+    mycol.update_one({'id': id},{ "$set":  {'name': name, 'id': id, 'avatar': avatar, 'start_date': start_date, 'end_date': end_date}})
 
 def takeName(id):
     name = mycol.find_one({"id": id})["name"]
