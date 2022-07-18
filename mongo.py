@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import datetime
 
 client = MongoClient(
-    'mongodb+srv://gewwworg:Qscqsc.02@cluster0.jn5m4.mongodb.net/?retryWrites=true&w=majority')
+    'MONGO')
 
 mydb = client["chaos"]
 mycol = mydb["chaos_members"]
